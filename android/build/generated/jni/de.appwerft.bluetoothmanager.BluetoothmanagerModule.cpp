@@ -95,6 +95,13 @@ Local<FunctionTemplate> BluetoothmanagerModule::getProxyTemplate(v8::Isolate* is
 	t->Set(titanium::Proxy::inheritSymbol.Get(isolate), FunctionTemplate::New(isolate, titanium::Proxy::inherit<BluetoothmanagerModule>));
 
 	// Method bindings --------------------------------------------------------
+	titanium::SetProtoMethod(isolate, t, "isAvailable", BluetoothmanagerModule::isAvailable);
+	titanium::SetProtoMethod(isolate, t, "getAvailability", BluetoothmanagerModule::getAvailability);
+	titanium::SetProtoMethod(isolate, t, "isAirplaneModeOn", BluetoothmanagerModule::isAirplaneModeOn);
+	titanium::SetProtoMethod(isolate, t, "hasPermissions", BluetoothmanagerModule::hasPermissions);
+	titanium::SetProtoMethod(isolate, t, "enable", BluetoothmanagerModule::enable);
+	titanium::SetProtoMethod(isolate, t, "disable", BluetoothmanagerModule::disable);
+	titanium::SetProtoMethod(isolate, t, "isEnabled", BluetoothmanagerModule::isEnabled);
 
 	Local<ObjectTemplate> prototypeTemplate = t->PrototypeTemplate();
 	Local<ObjectTemplate> instanceTemplate = t->InstanceTemplate();
@@ -104,6 +111,21 @@ Local<FunctionTemplate> BluetoothmanagerModule::getProxyTemplate(v8::Isolate* is
 		titanium::Proxy::setIndexedProperty);
 
 	// Constants --------------------------------------------------------------
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		LOGE(TAG, "Failed to get environment in BluetoothmanagerModule");
+		//return;
+	}
+
+
+			DEFINE_INT_CONSTANT(isolate, prototypeTemplate, "NOTAVAILABLE", 0);
+
+			DEFINE_INT_CONSTANT(isolate, prototypeTemplate, "DISABLED", 1);
+
+			DEFINE_INT_CONSTANT(isolate, prototypeTemplate, "ENABLED", 2);
+
+			DEFINE_INT_CONSTANT(isolate, prototypeTemplate, "DISABLED_AIRPLANE_MODE", 3);
+
 
 	// Dynamic properties -----------------------------------------------------
 
@@ -132,6 +154,502 @@ Local<FunctionTemplate> BluetoothmanagerModule::getProxyTemplate(v8::Local<v8::C
 }
 
 // Methods --------------------------------------------------------------------
+void BluetoothmanagerModule::isAvailable(const FunctionCallbackInfo<Value>& args)
+{
+	LOGD(TAG, "isAvailable()");
+	Isolate* isolate = args.GetIsolate();
+	Local<Context> context = isolate->GetCurrentContext();
+	HandleScope scope(isolate);
+
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		titanium::JSException::GetJNIEnvironmentError(isolate);
+		return;
+	}
+	static jmethodID methodID = NULL;
+	if (!methodID) {
+		methodID = env->GetMethodID(BluetoothmanagerModule::javaClass, "isAvailable", "()Z");
+		if (!methodID) {
+			const char *error = "Couldn't find proxy method 'isAvailable' with signature '()Z'";
+			LOGE(TAG, error);
+				titanium::JSException::Error(isolate, error);
+				return;
+		}
+	}
+
+	Local<Object> holder = args.Holder();
+	if (!JavaObject::isJavaObject(holder)) {
+		holder = holder->FindInstanceInPrototypeChain(getProxyTemplate(isolate));
+	}
+	if (holder.IsEmpty() || holder->IsNull()) {
+		LOGE(TAG, "Couldn't obtain argument holder");
+		args.GetReturnValue().Set(v8::Undefined(isolate));
+		return;
+	}
+	titanium::Proxy* proxy = NativeObject::Unwrap<titanium::Proxy>(holder);
+	if (!proxy) {
+		args.GetReturnValue().Set(Undefined(isolate));
+		return;
+	}
+
+	jvalue* jArguments = 0;
+
+
+	jobject javaProxy = proxy->getJavaObject();
+	if (javaProxy == NULL) {
+		args.GetReturnValue().Set(v8::Undefined(isolate));
+		return;
+	}
+	jboolean jResult = (jboolean)env->CallBooleanMethodA(javaProxy, methodID, jArguments);
+
+
+
+	proxy->unreferenceJavaObject(javaProxy);
+
+
+
+	if (env->ExceptionCheck()) {
+		Local<Value> jsException = titanium::JSException::fromJavaException(isolate);
+		env->ExceptionClear();
+		return;
+	}
+
+
+	Local<Boolean> v8Result = titanium::TypeConverter::javaBooleanToJsBoolean(isolate, env, jResult);
+
+
+
+	args.GetReturnValue().Set(v8Result);
+
+}
+void BluetoothmanagerModule::getAvailability(const FunctionCallbackInfo<Value>& args)
+{
+	LOGD(TAG, "getAvailability()");
+	Isolate* isolate = args.GetIsolate();
+	Local<Context> context = isolate->GetCurrentContext();
+	HandleScope scope(isolate);
+
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		titanium::JSException::GetJNIEnvironmentError(isolate);
+		return;
+	}
+	static jmethodID methodID = NULL;
+	if (!methodID) {
+		methodID = env->GetMethodID(BluetoothmanagerModule::javaClass, "getAvailability", "()I");
+		if (!methodID) {
+			const char *error = "Couldn't find proxy method 'getAvailability' with signature '()I'";
+			LOGE(TAG, error);
+				titanium::JSException::Error(isolate, error);
+				return;
+		}
+	}
+
+	Local<Object> holder = args.Holder();
+	if (!JavaObject::isJavaObject(holder)) {
+		holder = holder->FindInstanceInPrototypeChain(getProxyTemplate(isolate));
+	}
+	if (holder.IsEmpty() || holder->IsNull()) {
+		LOGE(TAG, "Couldn't obtain argument holder");
+		args.GetReturnValue().Set(v8::Undefined(isolate));
+		return;
+	}
+	titanium::Proxy* proxy = NativeObject::Unwrap<titanium::Proxy>(holder);
+	if (!proxy) {
+		args.GetReturnValue().Set(Undefined(isolate));
+		return;
+	}
+
+	jvalue* jArguments = 0;
+
+
+	jobject javaProxy = proxy->getJavaObject();
+	if (javaProxy == NULL) {
+		args.GetReturnValue().Set(v8::Undefined(isolate));
+		return;
+	}
+	jint jResult = (jint)env->CallIntMethodA(javaProxy, methodID, jArguments);
+
+
+
+	proxy->unreferenceJavaObject(javaProxy);
+
+
+
+	if (env->ExceptionCheck()) {
+		Local<Value> jsException = titanium::JSException::fromJavaException(isolate);
+		env->ExceptionClear();
+		return;
+	}
+
+
+	Local<Number> v8Result = titanium::TypeConverter::javaIntToJsNumber(isolate, env, jResult);
+
+
+
+	args.GetReturnValue().Set(v8Result);
+
+}
+void BluetoothmanagerModule::isAirplaneModeOn(const FunctionCallbackInfo<Value>& args)
+{
+	LOGD(TAG, "isAirplaneModeOn()");
+	Isolate* isolate = args.GetIsolate();
+	Local<Context> context = isolate->GetCurrentContext();
+	HandleScope scope(isolate);
+
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		titanium::JSException::GetJNIEnvironmentError(isolate);
+		return;
+	}
+	static jmethodID methodID = NULL;
+	if (!methodID) {
+		methodID = env->GetMethodID(BluetoothmanagerModule::javaClass, "isAirplaneModeOn", "()Z");
+		if (!methodID) {
+			const char *error = "Couldn't find proxy method 'isAirplaneModeOn' with signature '()Z'";
+			LOGE(TAG, error);
+				titanium::JSException::Error(isolate, error);
+				return;
+		}
+	}
+
+	Local<Object> holder = args.Holder();
+	if (!JavaObject::isJavaObject(holder)) {
+		holder = holder->FindInstanceInPrototypeChain(getProxyTemplate(isolate));
+	}
+	if (holder.IsEmpty() || holder->IsNull()) {
+		LOGE(TAG, "Couldn't obtain argument holder");
+		args.GetReturnValue().Set(v8::Undefined(isolate));
+		return;
+	}
+	titanium::Proxy* proxy = NativeObject::Unwrap<titanium::Proxy>(holder);
+	if (!proxy) {
+		args.GetReturnValue().Set(Undefined(isolate));
+		return;
+	}
+
+	jvalue* jArguments = 0;
+
+
+	jobject javaProxy = proxy->getJavaObject();
+	if (javaProxy == NULL) {
+		args.GetReturnValue().Set(v8::Undefined(isolate));
+		return;
+	}
+	jboolean jResult = (jboolean)env->CallBooleanMethodA(javaProxy, methodID, jArguments);
+
+
+
+	proxy->unreferenceJavaObject(javaProxy);
+
+
+
+	if (env->ExceptionCheck()) {
+		Local<Value> jsException = titanium::JSException::fromJavaException(isolate);
+		env->ExceptionClear();
+		return;
+	}
+
+
+	Local<Boolean> v8Result = titanium::TypeConverter::javaBooleanToJsBoolean(isolate, env, jResult);
+
+
+
+	args.GetReturnValue().Set(v8Result);
+
+}
+void BluetoothmanagerModule::hasPermissions(const FunctionCallbackInfo<Value>& args)
+{
+	LOGD(TAG, "hasPermissions()");
+	Isolate* isolate = args.GetIsolate();
+	Local<Context> context = isolate->GetCurrentContext();
+	HandleScope scope(isolate);
+
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		titanium::JSException::GetJNIEnvironmentError(isolate);
+		return;
+	}
+	static jmethodID methodID = NULL;
+	if (!methodID) {
+		methodID = env->GetMethodID(BluetoothmanagerModule::javaClass, "hasPermissions", "()Z");
+		if (!methodID) {
+			const char *error = "Couldn't find proxy method 'hasPermissions' with signature '()Z'";
+			LOGE(TAG, error);
+				titanium::JSException::Error(isolate, error);
+				return;
+		}
+	}
+
+	Local<Object> holder = args.Holder();
+	if (!JavaObject::isJavaObject(holder)) {
+		holder = holder->FindInstanceInPrototypeChain(getProxyTemplate(isolate));
+	}
+	if (holder.IsEmpty() || holder->IsNull()) {
+		LOGE(TAG, "Couldn't obtain argument holder");
+		args.GetReturnValue().Set(v8::Undefined(isolate));
+		return;
+	}
+	titanium::Proxy* proxy = NativeObject::Unwrap<titanium::Proxy>(holder);
+	if (!proxy) {
+		args.GetReturnValue().Set(Undefined(isolate));
+		return;
+	}
+
+	jvalue* jArguments = 0;
+
+
+	jobject javaProxy = proxy->getJavaObject();
+	if (javaProxy == NULL) {
+		args.GetReturnValue().Set(v8::Undefined(isolate));
+		return;
+	}
+	jboolean jResult = (jboolean)env->CallBooleanMethodA(javaProxy, methodID, jArguments);
+
+
+
+	proxy->unreferenceJavaObject(javaProxy);
+
+
+
+	if (env->ExceptionCheck()) {
+		Local<Value> jsException = titanium::JSException::fromJavaException(isolate);
+		env->ExceptionClear();
+		return;
+	}
+
+
+	Local<Boolean> v8Result = titanium::TypeConverter::javaBooleanToJsBoolean(isolate, env, jResult);
+
+
+
+	args.GetReturnValue().Set(v8Result);
+
+}
+void BluetoothmanagerModule::enable(const FunctionCallbackInfo<Value>& args)
+{
+	LOGD(TAG, "enable()");
+	Isolate* isolate = args.GetIsolate();
+	Local<Context> context = isolate->GetCurrentContext();
+	HandleScope scope(isolate);
+
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		titanium::JSException::GetJNIEnvironmentError(isolate);
+		return;
+	}
+	static jmethodID methodID = NULL;
+	if (!methodID) {
+		methodID = env->GetMethodID(BluetoothmanagerModule::javaClass, "enable", "(Lorg/appcelerator/kroll/KrollDict;)Z");
+		if (!methodID) {
+			const char *error = "Couldn't find proxy method 'enable' with signature '(Lorg/appcelerator/kroll/KrollDict;)Z'";
+			LOGE(TAG, error);
+				titanium::JSException::Error(isolate, error);
+				return;
+		}
+	}
+
+	Local<Object> holder = args.Holder();
+	if (!JavaObject::isJavaObject(holder)) {
+		holder = holder->FindInstanceInPrototypeChain(getProxyTemplate(isolate));
+	}
+	if (holder.IsEmpty() || holder->IsNull()) {
+		LOGE(TAG, "Couldn't obtain argument holder");
+		args.GetReturnValue().Set(v8::Undefined(isolate));
+		return;
+	}
+	titanium::Proxy* proxy = NativeObject::Unwrap<titanium::Proxy>(holder);
+	if (!proxy) {
+		args.GetReturnValue().Set(Undefined(isolate));
+		return;
+	}
+
+
+	jvalue jArguments[1];
+
+
+
+
+	bool isNew_0;
+	if (args.Length() <= 0) {
+		jArguments[0].l = NULL;
+
+	} else {
+	if (!args[0]->IsNull()) {
+		Local<Value> arg_0 = args[0];
+		jArguments[0].l =
+			titanium::TypeConverter::jsObjectToJavaKrollDict(
+				isolate,
+				env, arg_0, &isNew_0);
+	} else {
+		jArguments[0].l = NULL;
+	}
+	}
+
+
+	jobject javaProxy = proxy->getJavaObject();
+	if (javaProxy == NULL) {
+		args.GetReturnValue().Set(v8::Undefined(isolate));
+		return;
+	}
+	jboolean jResult = (jboolean)env->CallBooleanMethodA(javaProxy, methodID, jArguments);
+
+
+
+	proxy->unreferenceJavaObject(javaProxy);
+
+
+
+			if (isNew_0) {
+				env->DeleteLocalRef(jArguments[0].l);
+			}
+
+
+	if (env->ExceptionCheck()) {
+		Local<Value> jsException = titanium::JSException::fromJavaException(isolate);
+		env->ExceptionClear();
+		return;
+	}
+
+
+	Local<Boolean> v8Result = titanium::TypeConverter::javaBooleanToJsBoolean(isolate, env, jResult);
+
+
+
+	args.GetReturnValue().Set(v8Result);
+
+}
+void BluetoothmanagerModule::disable(const FunctionCallbackInfo<Value>& args)
+{
+	LOGD(TAG, "disable()");
+	Isolate* isolate = args.GetIsolate();
+	Local<Context> context = isolate->GetCurrentContext();
+	HandleScope scope(isolate);
+
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		titanium::JSException::GetJNIEnvironmentError(isolate);
+		return;
+	}
+	static jmethodID methodID = NULL;
+	if (!methodID) {
+		methodID = env->GetMethodID(BluetoothmanagerModule::javaClass, "disable", "()V");
+		if (!methodID) {
+			const char *error = "Couldn't find proxy method 'disable' with signature '()V'";
+			LOGE(TAG, error);
+				titanium::JSException::Error(isolate, error);
+				return;
+		}
+	}
+
+	Local<Object> holder = args.Holder();
+	if (!JavaObject::isJavaObject(holder)) {
+		holder = holder->FindInstanceInPrototypeChain(getProxyTemplate(isolate));
+	}
+	if (holder.IsEmpty() || holder->IsNull()) {
+		LOGE(TAG, "Couldn't obtain argument holder");
+		args.GetReturnValue().Set(v8::Undefined(isolate));
+		return;
+	}
+	titanium::Proxy* proxy = NativeObject::Unwrap<titanium::Proxy>(holder);
+	if (!proxy) {
+		args.GetReturnValue().Set(Undefined(isolate));
+		return;
+	}
+
+	jvalue* jArguments = 0;
+
+
+	jobject javaProxy = proxy->getJavaObject();
+	if (javaProxy == NULL) {
+		args.GetReturnValue().Set(v8::Undefined(isolate));
+		return;
+	}
+	env->CallVoidMethodA(javaProxy, methodID, jArguments);
+
+	proxy->unreferenceJavaObject(javaProxy);
+
+
+
+	if (env->ExceptionCheck()) {
+		titanium::JSException::fromJavaException(isolate);
+		env->ExceptionClear();
+	}
+
+
+
+
+	args.GetReturnValue().Set(v8::Undefined(isolate));
+
+}
+void BluetoothmanagerModule::isEnabled(const FunctionCallbackInfo<Value>& args)
+{
+	LOGD(TAG, "isEnabled()");
+	Isolate* isolate = args.GetIsolate();
+	Local<Context> context = isolate->GetCurrentContext();
+	HandleScope scope(isolate);
+
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		titanium::JSException::GetJNIEnvironmentError(isolate);
+		return;
+	}
+	static jmethodID methodID = NULL;
+	if (!methodID) {
+		methodID = env->GetMethodID(BluetoothmanagerModule::javaClass, "isEnabled", "()Z");
+		if (!methodID) {
+			const char *error = "Couldn't find proxy method 'isEnabled' with signature '()Z'";
+			LOGE(TAG, error);
+				titanium::JSException::Error(isolate, error);
+				return;
+		}
+	}
+
+	Local<Object> holder = args.Holder();
+	if (!JavaObject::isJavaObject(holder)) {
+		holder = holder->FindInstanceInPrototypeChain(getProxyTemplate(isolate));
+	}
+	if (holder.IsEmpty() || holder->IsNull()) {
+		LOGE(TAG, "Couldn't obtain argument holder");
+		args.GetReturnValue().Set(v8::Undefined(isolate));
+		return;
+	}
+	titanium::Proxy* proxy = NativeObject::Unwrap<titanium::Proxy>(holder);
+	if (!proxy) {
+		args.GetReturnValue().Set(Undefined(isolate));
+		return;
+	}
+
+	jvalue* jArguments = 0;
+
+
+	jobject javaProxy = proxy->getJavaObject();
+	if (javaProxy == NULL) {
+		args.GetReturnValue().Set(v8::Undefined(isolate));
+		return;
+	}
+	jboolean jResult = (jboolean)env->CallBooleanMethodA(javaProxy, methodID, jArguments);
+
+
+
+	proxy->unreferenceJavaObject(javaProxy);
+
+
+
+	if (env->ExceptionCheck()) {
+		Local<Value> jsException = titanium::JSException::fromJavaException(isolate);
+		env->ExceptionClear();
+		return;
+	}
+
+
+	Local<Boolean> v8Result = titanium::TypeConverter::javaBooleanToJsBoolean(isolate, env, jResult);
+
+
+
+	args.GetReturnValue().Set(v8Result);
+
+}
 
 // Dynamic property accessors -------------------------------------------------
 

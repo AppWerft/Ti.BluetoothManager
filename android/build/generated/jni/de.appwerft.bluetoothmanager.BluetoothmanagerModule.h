@@ -31,6 +31,13 @@ private:
 	static v8::Persistent<v8::FunctionTemplate> proxyTemplate;
 
 	// Methods -----------------------------------------------------------
+	static void isAvailable(const v8::FunctionCallbackInfo<v8::Value>&);
+	static void getAvailability(const v8::FunctionCallbackInfo<v8::Value>&);
+	static void isAirplaneModeOn(const v8::FunctionCallbackInfo<v8::Value>&);
+	static void hasPermissions(const v8::FunctionCallbackInfo<v8::Value>&);
+	static void enable(const v8::FunctionCallbackInfo<v8::Value>&);
+	static void disable(const v8::FunctionCallbackInfo<v8::Value>&);
+	static void isEnabled(const v8::FunctionCallbackInfo<v8::Value>&);
 
 	// Dynamic property accessors ----------------------------------------
 

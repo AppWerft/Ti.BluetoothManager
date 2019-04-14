@@ -33,149 +33,138 @@ import org.appcelerator.kroll.common.TiMessenger;
 @Kroll.module(name = "Bluetoothmanager", id = "de.appwerft.bluetoothmanager", propertyAccessors = { "onsuccess",
 		"onerror" })
 public class BluetoothmanagerModule extends KrollModule {
-	public class BluetoothModule extends KrollModule {
-		private Context ctx;
-		boolean findDevicesRunning = false;
-		boolean activityStopped = true;
-		final static int REQUEST_CODE = 3667;
 
+	private Context ctx;
+	boolean findDevicesRunning = false;
+	boolean activityStopped = true;
+	final static int REQUEST_CODE = 3667;
+
+	BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+	@Kroll.constant
+	final static int NOTAVAILABLE = 0;
+	@Kroll.constant
+	final static int DISABLED = 1;
+	@Kroll.constant
+	final static int ENABLED = 2;
+	@Kroll.constant
+	final static int DISABLED_AIRPLANE_MODE = 3;
+
+	public static final String LCAT = "BTM";
+
+	private KrollFunction onSuccess;
+	private KrollFunction onError;
+
+	public BluetoothmanagerModule() {
+		super();
+
+	}
+
+	@Kroll.method
+	public boolean isAvailable() {
+		return (bluetoothAdapter == null) ? false : true;
+	}
+
+	@Kroll.method
+	public int getAvailability() {
+		if (bluetoothAdapter == null)
+			return NOTAVAILABLE;
+		if  (bluetoothAdapter.isEnabled())
+			return ENABLED;
+		if (isAirplaneModeOn())
+			return DISABLED_AIRPLANE_MODE;
+		return DISABLED;
+	}
+
+	@Kroll.method
+	public boolean isEnabled() {
+		if (bluetoothAdapter == null) {
+			return false;
+		} else {
+			return (bluetoothAdapter.isEnabled()) ? true : false;
+		}
+	}
+
+	@Kroll.method
+	public boolean enable(@Kroll.argument(optional = true) KrollDict opts) {
+		importProps(opts);
+		if (opts == null && onSuccess == null) { // simple start without callback
+			return bluetoothAdapter.enable();
+		} else {
+			final Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+			final TiActivitySupport activitySupport = (TiActivitySupport) TiApplication.getInstance()
+					.getCurrentActivity();
+
+			if (TiApplication.isUIThread()) {
+				activitySupport.launchActivityForResult(intent, REQUEST_CODE, new BTEnablerResultHandler());
+			} else {
+				TiMessenger.postOnMain(new Runnable() {
+					@Override
+					public void run() {
+						activitySupport.launchActivityForResult(intent, REQUEST_CODE, new BTEnablerResultHandler());
+					}
+				});
+			}
+			return true;
+		}
+	}
+
+	@SuppressWarnings("deprecation")
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+	@Kroll.method
+	public boolean isAirplaneModeOn() {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
+			return Settings.System.getInt(ctx.getContentResolver(), Settings.System.AIRPLANE_MODE_ON, 0) != 0;
+		} else {
+			return Settings.Global.getInt(ctx.getContentResolver(), Settings.Global.AIRPLANE_MODE_ON, 0) != 0;
+		}
+	}
+
+	@Kroll.method
+	public boolean hasPermissions() {
+		return hasPermission("android.permission.ACCESS_COARSE_LOCATION")
+				&& hasPermission("android.permission.BLUETOOTH")
+				&& hasPermission("android.permission.android.permission.BLUETOOTH_ADMIN");
+	}
+
+	@Kroll.method
+	public void disable() {
 		BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-		@Kroll.constant
-		final static int NOTAVAILABLE = 0;
-		@Kroll.constant
-		final static int DISABLED = 1;
-		@Kroll.constant
-		final static int ENABLED = 2;
-
-		public static final String LCAT = "BTM";
-
-		private KrollFunction onSuccess;
-		private KrollFunction onError;
-
-		public BluetoothModule() {
-			super();
-
+		if (bluetoothAdapter.isEnabled()) {
+			bluetoothAdapter.disable();
 		}
+		return;
+	}
 
-		@Kroll.method
-		public boolean isAvailable() {
-			return (bluetoothAdapter == null) ? false : true;
-		}
+	private final class BTEnablerResultHandler implements TiActivityResultHandler {
 
-		@Kroll.method
-		public int getAvailability() {
-			if (bluetoothAdapter == null)
-				return NOTAVAILABLE;
-			return bluetoothAdapter.isEnabled() ? ENABLED : DISABLED;
-		}
-
-		@Kroll.method
-		public boolean isEnabled() {
-			if (bluetoothAdapter == null) {
-				return false;
-			} else {
-				return (bluetoothAdapter.isEnabled()) ? true : false;
+		@Override
+		public void onError(Activity activity, int requestCode, Exception ex) {
+			KrollDict event = new KrollDict();
+			event.put("message", ex.getLocalizedMessage());
+			if (onError != null)
+				onError.callAsync(getKrollObject(), event);
+			if (hasListeners("onerror")) {
+				fireEvent("onerror", event);
 			}
 		}
 
-		@Kroll.method
-		public boolean enable(@Kroll.argument(optional = true) KrollDict opts) {
-			if (opts != null) {
-				if (opts.containsKeyAndNotNull("onsuccess")) {
-					if (opts.get("onsuccess") instanceof KrollFunction) {
-						onSuccess = (KrollFunction) opts.get("onsuccess");
-					}
-				}
-				if (opts.containsKeyAndNotNull("onerror")) {
-					if (opts.get("onerror") instanceof KrollFunction) {
-						onError = (KrollFunction) opts.get("onerror");
-					}
-				}
-			}
-			if (hasProperty("onsuccess")) {
-				onSuccess = (KrollFunction) getProperty("onerror");
-			}
-			if (hasProperty("onerror")) {
-				onError = (KrollFunction) getProperty("onerror");
-			}
-			if (opts == null && onSuccess == null) { // simple start without callback
-				return bluetoothAdapter.enable();
-			} else {
-				final Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-				final TiActivitySupport activitySupport = (TiActivitySupport) TiApplication.getInstance()
-						.getCurrentActivity();
-
-				if (TiApplication.isUIThread()) {
-					activitySupport.launchActivityForResult(intent, REQUEST_CODE, new BTEnablerResultHandler());
-				} else {
-					TiMessenger.postOnMain(new Runnable() {
-						@Override
-						public void run() {
-							activitySupport.launchActivityForResult(intent, REQUEST_CODE, new BTEnablerResultHandler());
-						}
-					});
-				}
-				return true;
-			}
-		}
-		
-		@SuppressWarnings("deprecation")
-		@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-		@Kroll.method
-		public boolean isAirplaneModeOn() {        
-		    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
-		        return Settings.System.getInt(ctx.getContentResolver(), 
-		                Settings.System.AIRPLANE_MODE_ON, 0) != 0;          
-		    } else {
-		        return Settings.Global.getInt(ctx.getContentResolver(), 
-		                Settings.Global.AIRPLANE_MODE_ON, 0) != 0;
-		    }       
-		}
-		@Kroll.method
-		public boolean hasPermissions() {
-			return hasPermission("android.permission.ACCESS_COARSE_LOCATION")
-					&& hasPermission("android.permission.BLUETOOTH")
-					&& hasPermission("android.permission.android.permission.BLUETOOTH_ADMIN");
-		}
-
-		@Kroll.method
-		public void disable() {
-			BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-			if (bluetoothAdapter.isEnabled()) {
-				bluetoothAdapter.disable();
-			}
-			return;
-		}
-
-		private final class BTEnablerResultHandler implements TiActivityResultHandler {
-
-			@Override
-			public void onError(Activity activity, int requestCode, Exception ex) {
+		@Override
+		public void onResult(Activity activity, int requestCode, int resultCode, Intent data) {
+			if (requestCode == REQUEST_CODE) {
 				KrollDict event = new KrollDict();
-				event.put("message", ex.getLocalizedMessage());
-				if (onError != null)
-					onError.callAsync(getKrollObject(), event);
-				if (hasListeners("onerror")) {
-					fireEvent("onerror", event);
-				}
-			}
-
-			@Override
-			public void onResult(Activity activity, int requestCode, int resultCode, Intent data) {
-				if (requestCode == REQUEST_CODE) {
-					KrollDict event = new KrollDict();
-					event.put("result", resultCode);
-					event.put("name", bluetoothAdapter.getName());
-					event.put("address", bluetoothAdapter.getAddress());
-					if (onSuccess != null)
-						onSuccess.callAsync(getKrollObject(), event);
-					if (hasListeners("onsuccess")) {
-						fireEvent("onsuccess", event);
-					}
+				event.put("result", resultCode);
+				event.put("name", bluetoothAdapter.getName());
+				event.put("address", bluetoothAdapter.getAddress());
+				if (onSuccess != null)
+					onSuccess.callAsync(getKrollObject(), event);
+				if (hasListeners("onsuccess")) {
+					fireEvent("onsuccess", event);
 				}
 			}
 		}
 	}
+
+	
 
 	private boolean hasPermission(String permission) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -185,5 +174,26 @@ public class BluetoothmanagerModule extends KrollModule {
 			}
 		}
 		return true;
+	}
+
+	private void importProps(KrollDict opts) {
+		if (opts != null) {
+			if (opts.containsKeyAndNotNull("onsuccess")) {
+				if (opts.get("onsuccess") instanceof KrollFunction) {
+					onSuccess = (KrollFunction) opts.get("onsuccess");
+				}
+			}
+			if (opts.containsKeyAndNotNull("onerror")) {
+				if (opts.get("onerror") instanceof KrollFunction) {
+					onError = (KrollFunction) opts.get("onerror");
+				}
+			}
+		}
+		if (hasProperty("onsuccess")) {
+			onSuccess = (KrollFunction) getProperty("onerror");
+		}
+		if (hasProperty("onerror")) {
+			onError = (KrollFunction) getProperty("onerror");
+		}
 	}
 }
