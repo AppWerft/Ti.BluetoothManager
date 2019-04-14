@@ -15,4 +15,4 @@ name: bluetoothmanager
 moduleid: de.appwerft.bluetoothmanager
 guid: 539403a5-f8f9-427c-b691-4e31b5ebe582
 platform: android
-minsdk: 7.0.1.GA
+minsdk: 7.0.1
