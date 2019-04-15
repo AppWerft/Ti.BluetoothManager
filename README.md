@@ -32,7 +32,7 @@ BT.enable({
 })
 ```
 
-### Callback as module property
+#### Callback as module property
 
 ```js 
 import BT FROM 'de.appwerft.bluetoothmanager';
@@ -42,7 +42,7 @@ BT.onsuccess = e => {
 }
 ```
 
-### Module event
+#### Module event
 
 ```js 
 import BT FROM 'de.appwerft.bluetoothmanager';
@@ -55,3 +55,4 @@ BT.addEventListener('onerror',e => {
 BT.enable();
 ```
 
+### getBoundedDevices()

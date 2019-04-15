@@ -50,13 +50,58 @@ public class BluetoothmanagerModule extends KrollModule {
 	final static int DISABLED_AIRPLANE_MODE = 3;
 
 	public static final String LCAT = "BTM";
+	public KrollFunction onReady;
 
 	private KrollFunction onSuccess;
 	private KrollFunction onError;
 
+	int type;
+	Runnable cronJob;
+	Handler handler = new Handler(Looper.getMainLooper());
 	public BluetoothmanagerModule() {
 		super();
 
+	}
+
+	@Kroll.method
+	public void startMonitorPairedDevices(KrollDict opts) {
+		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+		if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled())
+			return;
+		if (opts.containsKeyAndNotNull("type"))
+			type = opts.getInt("type");
+
+		if (opts.containsKeyAndNotNull("onchanged"))
+			onReady = (KrollFunction) opts.get("onchanged");
+		cronJob = new Runnable() {
+			@Override
+			public void run() {
+				bluetoothAdapter.getProfileProxy(ctx, new BondedDevicesScanner(
+						A2dpModule.this), BluetoothProfile.A2DP);
+				handler.postDelayed(this, 12000);
+			}
+		};
+		handler.post(cronJob);
+
+		/*
+		 * ctx.registerReceiver(MonitorBondedDevicesr, new IntentFilter(
+		 * BluetoothDevice.ACTION_FOUND)); if (!btAdapter.isDiscovering()) {
+		 * btAdapter.startDiscovery(); } else Log.w(LCAT,
+		 * "was discovering, cannot start discovering");
+		 */
+	}
+
+	@Kroll.method
+	public void stopMonitorPairedDevices() {
+		tearDown();
+	}
+
+	private void tearDown() {
+		handler.removeCallbacks(cronJob);
+		if (pairedDevices != null)
+			PairedDevices.resetList();
+		if (btAdapter != null && btAdapter.isDiscovering())
+			btAdapter.cancelDiscovery();
 	}
 
 	@Kroll.method
