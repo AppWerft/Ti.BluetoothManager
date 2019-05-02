@@ -65,12 +65,18 @@ This methods are in submodule `BluetoothLE`.
 ```
 const BLE = require('de.appwerft.bluetoothmanager').BLE;
 if (BLE.isBleSupported()) {
-	BLE.startScan();
-	BLE.onFound = function(e) {
-		e.devices.forEach(function(d){
-			console.log(d);
-		});
-		BLE.stopScan();
-	}
+	BLE.startScan({
+		onfound : function(e) {
+			console.log(e.device);
+			console.log(e.name);
+			console.log(e.address);
+			console.log(e.rssi);
+			console.log(e.type);
+		},
+		onstatechanged : function(e) {
+		},
+		onerror : function(e) {
+		}
+	});
 }
 ```
