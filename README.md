@@ -56,3 +56,21 @@ BT.enable();
 ```
 
 ### getBoundedDevices()
+
+
+## BluetoothLE
+
+This methods are in submodule `BluetoothLE`.
+
+```
+const BLE = require('de.appwerft.bluetoothmanager').BLE;
+if (BLE.isBleSupported()) {
+	BLE.startScan();
+	BLE.onFound = function(e) {
+		e.devices.forEach(function(d){
+			console.log(d);
+		});
+		BLE.stopScan();
+	}
+}
+```

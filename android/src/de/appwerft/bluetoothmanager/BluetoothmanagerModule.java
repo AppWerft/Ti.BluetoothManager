@@ -20,10 +20,13 @@ import org.appcelerator.titanium.util.TiActivitySupport;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 
 import org.appcelerator.kroll.common.Log;
@@ -58,6 +61,7 @@ public class BluetoothmanagerModule extends KrollModule {
 	int type;
 	Runnable cronJob;
 	Handler handler = new Handler(Looper.getMainLooper());
+
 	public BluetoothmanagerModule() {
 		super();
 
@@ -100,8 +104,8 @@ public class BluetoothmanagerModule extends KrollModule {
 		handler.removeCallbacks(cronJob);
 		if (pairedDevices != null)
 			PairedDevices.resetList();
-		if (btAdapter != null && btAdapter.isDiscovering())
-			btAdapter.cancelDiscovery();
+		if (bluetoothAdapter != null && bluetoothAdapter.isDiscovering())
+			bluetoothAdapter.cancelDiscovery();
 	}
 
 	@Kroll.method

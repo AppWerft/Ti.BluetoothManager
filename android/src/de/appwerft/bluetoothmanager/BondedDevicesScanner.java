@@ -44,7 +44,7 @@ public final class BondedDevicesScanner implements
 			}
 
 			// get all bonded:
-			Set<BluetoothDevice> devices = module.btAdapter.getBondedDevices();
+			Set<BluetoothDevice> devices = module.bluetoothAdapter.getBondedDevices();
 			List<PairedDevice> pairedDevices = new ArrayList<PairedDevice>();
 			for (BluetoothDevice device : devices) {
 				if (device.getType() == module.type
@@ -65,6 +65,10 @@ public final class BondedDevicesScanner implements
 			// http://stackoverflow.com/questions/5171248/programmatically-connect-to-paired-bluetooth-device
 			// no devices are connected
 
+		} else if (profile == BluetoothProfile.GATT) {
+			
+		}else if (profile == BluetoothProfile.HEALTH) {
+			
 		}
 	}
 
