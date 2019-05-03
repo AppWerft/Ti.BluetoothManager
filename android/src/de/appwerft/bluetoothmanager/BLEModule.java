@@ -22,6 +22,7 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -30,10 +31,10 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 
 @Kroll.module(parentModule = BluetoothmanagerModule.class)
-public class BluetoothLEModule extends BluetoothmanagerModule {
+public class BLEModule extends BluetoothmanagerModule {
 
 	// Standard Debugging variables
-	private static final String LCAT = BluetoothmanagerModule.LCAT;
+	public static final String LCAT = BluetoothmanagerModule.LCAT;
 
 	private static Context ctx;
 	private static BluetoothLeScanner scanner;
@@ -49,10 +50,17 @@ public class BluetoothLEModule extends BluetoothmanagerModule {
 	private KrollFunction onError;
 	private KrollFunction onStateChanged;
 
-	// You can define constants with @Kroll.constant, for example:
-	// @Kroll.constant public static final String EXTERNAL_NAME = value;
+	
+	@Kroll.constant 
+	public static final int SCAN_MODE_BALANCED = ScanSettings.SCAN_MODE_BALANCED;
+	@Kroll.constant 
+	public static final int SCAN_MODE_LOW_LATENCY = ScanSettings.SCAN_MODE_LOW_LATENCY;
+	@Kroll.constant 
+	public static final int SCAN_MODE_LOW_POWER = ScanSettings.SCAN_MODE_LOW_POWER;
+	@Kroll.constant 
+	public static final int SCAN_MODE_OPPORTUNISTIC = ScanSettings.SCAN_MODE_OPPORTUNISTIC;
 
-	public BluetoothLEModule() {
+	public BLEModule() {
 		super();
 		ctx = TiApplication.getInstance().getApplicationContext();
 		isBleSupported = ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
@@ -77,6 +85,7 @@ public class BluetoothLEModule extends BluetoothmanagerModule {
 
 	@Kroll.method
 	public boolean startScan(KrollDict opts) {
+		int scanmode=0;
 		if (opts.containsKeyAndNotNull("onfound")) {
 			onFound = (KrollFunction) opts.get("onfound");
 		}
@@ -85,6 +94,9 @@ public class BluetoothLEModule extends BluetoothmanagerModule {
 		}
 		if (opts.containsKeyAndNotNull("onerror")) {
 			onError = (KrollFunction) opts.get("onerror");
+		}
+		if (opts.containsKeyAndNotNull("scanmode")) {
+			scanmode = opts.getInt("scanmode");
 		}
 		return startDiscoveringBle();
 	}
@@ -187,7 +199,7 @@ public class BluetoothLEModule extends BluetoothmanagerModule {
 			scanner = adapter.getBluetoothLeScanner();
 
 			if (null != scanner) {
-				((BluetoothLeScanner) scanner).startScan((ScanCallback) scanCallback);
+				((BluetoothLeScanner) scanner).startScan(null,null,(ScanCallback) scanCallback);
 				return true;
 			}
 

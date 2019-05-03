@@ -1,6 +1,5 @@
 package de.appwerft.bluetoothmanager;
 
-package de.appwerft.disto;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -19,7 +18,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 
 
-@Kroll.proxy(creatableInModule = BluetoothmanagerModule.class)
+@Kroll.proxy(creatableInModule = BLEModule.class)
 public class DeviceProxy extends KrollProxy  {
 	BluetoothDevice device;
 	String name;
